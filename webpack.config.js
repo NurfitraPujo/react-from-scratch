@@ -1,50 +1,58 @@
-const path = require("path");
-const HTMLWebpackPlugin = require("html-webpack-plugin");
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const path = require('path');
+const HTMLwebpackplugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const TSConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
-  devtool: "source-map",
-  entry: "./src/index.js",
+  resolve: {
+    plugins: [new TSConfigPathsPlugin()],
+    extensions: ['.tsx', '.ts', '.js'],
+  },
+  devServer: {
+    contentBase: path.join(__dirname, 'public'),
+    compress: true,
+    port: 3000,
+  },
+  entry: path.resolve(__dirname, 'src', 'index.tsx'),
   output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "index_bundle.js",
+    path: path.resolve(__dirname, 'public'),
+    filename: 'bundle.js',
   },
   module: {
     rules: [
       {
-        test: /\.(js)$/,
+        test: /\.js$/,
         exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
-          options: {
-            presets: ["@babel/preset-react"],
-          },
-        },
+        loader: ['babel-loader', 'eslint-loader'],
       },
       {
-        test: /\.(css)$/,
-        use: ExtractTextPlugin.extract({
-          fallback: "style-loader",
-          use: ["css-loader"],
-        }),
+        test: /\.ts(x?)$/,
+        exclude: /node_modules/,
+        use: [{ loader: 'ts-loader' }, { loader: 'eslint-loader' }],
       },
       {
-        test: /\.(png|jpg|gif)$/,
-        use: [
-          {
-            loader: "file-loader",
-          },
-        ],
+        test: /\.css$/,
+        use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
+      },
+      {
+        test: /\.(png|svg|jpg|gif)$/i,
+        use: ['file-loader'],
+      },
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        loader: 'source-map-loader',
       },
     ],
   },
-  mode: "development",
   plugins: [
-    new HTMLWebpackPlugin({
+    new HTMLwebpackplugin({
       hash: true,
-      filename: "index.html",
-      template: "src/index.html",
+      filename: 'index.html',
+      template: './public/index.html',
     }),
-    new ExtractTextPlugin({ filename: "css/style.css" }),
+    new ExtractTextPlugin({
+      filename: 'style/main.css',
+    }),
   ],
 };
