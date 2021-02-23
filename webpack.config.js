@@ -4,6 +4,8 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const TSConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 
 module.exports = {
+  mode: 'development',
+  devtool: 'inline-source-maps',
   resolve: {
     plugins: [new TSConfigPathsPlugin()],
     extensions: ['.tsx', '.ts', '.js'],
