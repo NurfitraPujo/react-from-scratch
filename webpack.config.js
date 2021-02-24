@@ -1,8 +1,8 @@
 const path = require('path');
 const HTMLwebpackplugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const TSConfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const MiniCSSExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
   mode: 'development',
@@ -16,27 +16,68 @@ module.exports = {
     compress: true,
     port: 3000,
     hot: true,
+    historyApiFallback: true,
   },
   entry: path.resolve(__dirname, 'src', 'index.tsx'),
   output: {
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].[contentHash].js',
+    filename: 'bundle.js',
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
+        test: /\.(jsx|js)$/,
+        include: path.resolve(__dirname, 'src'),
         exclude: /node_modules/,
-        loader: ['babel-loader', 'eslint-loader'],
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                [
+                  '@babel/preset-env',
+                  {
+                    targets: 'defaults',
+                  },
+                ],
+                '@babel/preset-react',
+              ],
+            },
+          },
+        ],
       },
       {
         test: /\.ts(x?)$/,
         exclude: /node_modules/,
-        use: [{ loader: 'ts-loader' }, { loader: 'eslint-loader' }],
+        use: [
+          { loader: 'ts-loader' },
+          {
+            loader: 'eslint-loader',
+            options: {
+              fix: true,
+            },
+          },
+        ],
       },
       {
         test: /\.css$/,
-        use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
+        include: path.resolve(__dirname, 'src'),
+        use: [
+          {
+            loader: MiniCssExtractPlugin.loader,
+            options: {
+              hmr: env.NODE_ENV === 'development',
+            },
+          },
+          { loader: 'style-loader' },
+          {
+            loader: 'css-loader',
+            options: {
+              importLoaders: 1,
+            },
+          },
+          'postcss-loader',
+        ],
       },
       {
         test: /\.(png|svg|jpg|gif)$/i,
@@ -49,15 +90,19 @@ module.exports = {
       },
     ],
   },
+  watch: true,
   plugins: [
     new CleanWebpackPlugin(),
     new HTMLwebpackplugin({
       hash: true,
-      filename: 'index.html',
+      filename: './index.html',
       template: './public/index.html',
     }),
-    new ExtractTextPlugin({
-      filename: 'style/main.css',
+    new MiniCssExtractPlugin({
+      filename: '[name].bundle.css',
+      chunkFilename: '[id].css',
     }),
+    new webpack.HotModuleReplacementPlugin(),
+    require('autoprefixer'),
   ],
 };
