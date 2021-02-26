@@ -9,7 +9,7 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const webpack = require('webpack');
 
 module.exports = function (_env, arg) {
-  const isProduction = argv.mode === 'production';
+  const isProduction = arg.mode === 'production';
   const isDevelopment = !isProduction;
   return {
     devtool: isDevelopment && 'cheap-module-source-map',
